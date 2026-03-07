@@ -1,12 +1,12 @@
-# 安装
-
-使用前请从 `config.example.json` 复制一份到 `config.json`，然后在 `config.json` 中填入：
-* 灰机维基的机器人用户名、密码和机器人操作所需的 header（没有的话找 Revela255 要）
+# 准备
+使用前请从 `config.example.json` 复制一份到 `config.json`，然后在 `config.json` 中填入灰机维基的机器人用户名、密码和机器人操作所需的 header（没有的话在群里找 Revela255 要）
 
 记得安装依赖
 ```bat
 pip install -r requirements.txt
 ```
+
+运行解包工具：https://github.com/OceanUwU/sts2-exporter
 
 # 使用
 各种`update_xxx.py`用途都很直观就不说了
