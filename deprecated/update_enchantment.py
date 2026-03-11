@@ -1,16 +1,16 @@
-from utils import *
+from deprecated_utils import *
 
 print(f"共找到 {len(data['enchantments'])} 个附魔数据，正在处理...")
 
 for enchantment in data['enchantments']:
     enchantment["category"] = "enchantment"
-    enchantment["ver"] = ver
     enchantment["id"] = enchantment["id"].lower()
     enchantment["image"] = f'{enchantment["id"]}.png'
+    if enchantment.get("description"):
+        enchantment["description"] = clean_text(enchantment["description"])
 
 field_order = [
     "category",
-    "ver",
     "id",
     "name",
     "description",
@@ -34,9 +34,10 @@ print(f"共找到 {len(data['afflictions'])} 个苦痛数据，正在处理...")
 
 for affliction in data['afflictions']:
     affliction["category"] = "affliction"
-    affliction["ver"] = ver
     affliction["id"] = affliction["id"].lower()
     affliction["image"] = f'{affliction["id"]}.png'
+    if affliction.get("description"):
+        affliction["description"] = clean_text(affliction["description"])
 
 result = [[affliction.get(field) for field in field_order] for affliction in data['afflictions']]
 

@@ -1,4 +1,4 @@
-from utils import *
+from deprecated_utils import *
 
 print(f"共找到 {len(data['events'])} 个事件数据，正在处理...")
 
@@ -21,7 +21,7 @@ def parse_event_options(options):
     i = 0
     option_index = 1
     while i < len(options):
-        if options[i] == "锁定": # 当前选项带锁定提示
+        if options[i] == "锁定" or options[i] == "已锁定": # 当前选项带锁定提示
             if i + 3 >= len(options):
                 raise ValueError(f'非法数据：第 {option_index} 个选项的"锁定"结构不完整')
             result[f"option{option_index}_effect_locked"] = options[i + 1]
@@ -42,23 +42,24 @@ def parse_event_options(options):
 parsed_options_keys = set()
 for event in data['events']:
     event["category"] = "event"
-    event["ver"] = ver
     event["id"] = event["id"].lower()
     event["image"] = f'{event["id"]}.png'
-    if event['id'] == "lost_wisp":
-        event["image"] = "lost_wisp_(event).png"
     if event.get("description"):
         event["description"] = clean_text(event["description"])
     parsed_options = parse_event_options(event.get("options", []))
-    if event["id"] == "zen_weaver":
-        parsed_options["option2_effect_locked"] = "金币不足。"
-        parsed_options["option3_effect_locked"] = "金币不足。"
     event.update(parsed_options)
     parsed_options_keys.update(parsed_options.keys())
 
+for event in data['events']:
+    if event['id'] == "lost_wisp":
+        event["image"] = "lost_wisp_(event).png"
+        del event["option2_effect_locked"]
+    elif event["id"] == "zen_weaver":
+        event["option2_effect_locked"] = "金币不足。"
+        event["option3_effect_locked"] = "金币不足。"
+
 field_order = [
     "category",
-    "ver",
     "id",
     "name",
     "description",

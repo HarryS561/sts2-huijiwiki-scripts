@@ -1,4 +1,4 @@
-from utils import *
+from deprecated_utils import *
 import json
 from collections import defaultdict
 

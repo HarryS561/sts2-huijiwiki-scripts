@@ -1,4 +1,4 @@
-from utils import *
+from deprecated_utils import *
 
 base_path = 'C:/Program Files (x86)/Steam/steamapps/common/Slay the Spire 2/export/slay-the-spire-2'
 

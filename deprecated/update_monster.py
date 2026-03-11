@@ -1,4 +1,4 @@
-from utils import *
+from deprecated_utils import *
 
 print(f"共找到 {len(data['creatures'])} 个生物数据，正在处理...")
 
@@ -6,7 +6,6 @@ creatures = [creature for creature in data['creatures'] if creature.get("type") 
 
 for creature in creatures[::-1]:
     creature["category"] = "creature"
-    creature["ver"] = ver
     creature["id"] = creature["id"].lower()
     creature["image"] = f'{creature["id"]}.png'
     creature["minHP"] = str(creature["minHP"])
@@ -14,7 +13,6 @@ for creature in creatures[::-1]:
 
 field_order = [
     "category",
-    "ver",
     "id",
     "name",
     "image",
@@ -33,4 +31,4 @@ pagedata = json.dumps({
 
 # with open(f"creatures_{ver}.json", "w", encoding="utf-8") as f:
 #     f.write(pagedata)
-site.pages["Data:Creature.tabx"].save(pagedata, summary=f"导出数据自版本 {ver}")
+site.pages["Data:Monster.tabx"].save(pagedata, summary=f"导出数据自版本 {ver}")
