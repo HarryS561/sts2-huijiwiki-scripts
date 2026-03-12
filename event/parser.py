@@ -9,8 +9,8 @@ class EventWikiBot:
                    '羽化', '究极打击', '究极防御', '棱镜碎片', '王室猛毒', '大蘑菇', '芳香蘑菇', '遗忘之魂']
     ENCHANTMENT_NAMES = [e["name"] for e in json.load(open("data/enchantments.json", encoding="utf-8"))]
     CURSE_NAMES = [e["name"] for e in json.load(open("data/cards.json", encoding="utf-8")) if e['rarity'] == 'Curse']
-    REPLACEMENTS = {
-        ('Max HP', '最大生命值'), 
+    EN_REPLACEMENTS = {
+        (' Max HP', '最大生命值'), 
         ('one of your Relics', '你的1件随机遗物'),
         ('a random Relic', '1件随机遗物'),
         ('a random Card', '1张随机卡牌'),
@@ -18,6 +18,7 @@ class EventWikiBot:
         ('a Potion', '1瓶随机药水'),
         ('Obtain ', '获得'),
         ('. 拾起时', '。拾起时'),
+        ('Add Writhe', '将一张苦恼添加')
     }
     PREVENT_MODIFY = "<!--本条注释用于防止机器人更新这个事件-->"
 
@@ -27,18 +28,21 @@ class EventWikiBot:
         self.events_by_id = {event['id']: event for event in self.events}
         self.missing_notes = []
 
-    def _clean_text(self, text):
+    def _clean_text(self, text, addlink = False):
         if not text:
             return ''
-        for quest_name in self.QUEST_NAMES:
-            text = text.replace(quest_name, f'{{{{Card_link|{quest_name}}}}}')
-        for curse_name in self.CURSE_NAMES:
-            text = text.replace(curse_name, f'{{{{Card_link|{curse_name}}}}}')
-        for enchantment_name in self.ENCHANTMENT_NAMES:
-            text = text.replace(enchantment_name, f'[[附魔|{enchantment_name}]]')
-        for orig, repl in self.REPLACEMENTS:
+        text = re.sub(r"\[/?[a-z]+(?::\d+)?\]", "", text)
+        for orig, repl in self.EN_REPLACEMENTS:
             text = text.replace(orig, repl)
-        return re.sub(r"\[/?[a-z]+(?::\d+)?\]", "", text)
+        if addlink:
+            for quest_name in self.QUEST_NAMES:
+                text = text.replace(quest_name, f'{{{{Card_link|{quest_name}}}}}')
+            for curse_name in self.CURSE_NAMES:
+                text = text.replace(curse_name, f'{{{{Card_link|{curse_name}}}}}')
+            for enchantment_name in self.ENCHANTMENT_NAMES:
+                text = text.replace(enchantment_name, f'[[附魔|{enchantment_name}]]')
+        text = text.replace("\n\n", "\n").replace("\n", "<br />")
+        return text
 
     def _extract_existing_notes(self, page_content):
         notes = {}
@@ -111,7 +115,7 @@ class EventWikiBot:
     def _generate_option_template(self, option, level, locked_desc, result_desc, existing_note=''):
         # Escape pipe characters in content
         title = option.get('title', '')
-        description = self._clean_text(option.get('description', ''))
+        description = self._clean_text(option.get('description', ''), addlink=True)
         locked_text = self._clean_text(locked_desc)
         result_text = self._clean_text(result_desc)
 

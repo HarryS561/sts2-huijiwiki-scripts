@@ -18,7 +18,7 @@ site.login(
 
 ver = '0.98.2'
 
-data_path = "C:/Users/syw/Downloads/spire-codex/data"
+data_path = "data"
 
 color_mapping = {
     "ironclad": "铁甲战士",

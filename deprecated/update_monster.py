@@ -18,6 +18,13 @@ field_order = [
     "image",
     "minHP",
     "maxHP",
+    "ascenderminHP",
+    "ascendermaxHP",
+    "tier",
+    "power",
+    "stage",
+    "note",
+    "page",
 ]
 result = [[creature.get(field) for field in field_order] for creature in creatures]
 
