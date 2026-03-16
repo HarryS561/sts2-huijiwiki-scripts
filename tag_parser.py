@@ -28,8 +28,8 @@ ENERGY_MAPPING = {
     "quest": "colorless",
     "token": "colorless",
 }
-ENERGY_ICON = "[[File:colorless_energy_icon.png|16px|link=]]"
-STAR_ICON = "[[File:star_icon.png|16px|link=]]"
+ENERGY_ICON = "[[File:colorless_energy_icon.png|16px|link=能量]]"
+STAR_ICON = "[[File:star_icon.png|16px|link=辉星]]"
 
 
 class Node:
@@ -188,7 +188,7 @@ class Parser:
             count = 1
 
         if name == "energy":
-            energy_icon = f"[[File:{self.color}_energy_icon.png|16px|link=]]" if self.color else ENERGY_ICON
+            energy_icon = f"[[File:{self.color}_energy_icon.png|16px|link=能量]]" if self.color else ENERGY_ICON
             return Text(energy_icon * count)
         elif name == "star":
             return Text(STAR_ICON * count)
