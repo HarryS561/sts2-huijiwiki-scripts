@@ -8,14 +8,13 @@ class EventWikiBot:
                    '羽化', '究极打击', '究极防御', '棱镜碎片', '王室猛毒', '大蘑菇', '芳香蘑菇', '遗忘之魂']
     ENCHANTMENT_NAMES = [e["name"] for e in get_data_by_api("enchantments")]
     CURSE_NAMES = [e["name"] for e in get_data_by_api("cards") if e['rarity'] == 'Curse']
-    EN_REPLACEMENTS = {
+    EN_REPLACEMENTS = [
         (' Max HP', '最大生命值'), 
         ('one of your Relics', '你的1件随机遗物'),
         ('a random 遗物', '1件随机遗物'),
         ('a random 卡牌', '1张随机卡牌'),
         ('a random Card', '1张随机卡牌'),
         ('a random 药水', '1瓶随机药水'),
-
         ('a Potion', '1瓶随机药水'),
         ('Obtain ', '获得'),
         ('. 拾起时', '。拾起时'),
@@ -23,7 +22,7 @@ class EventWikiBot:
         ('Potion', '药水'),
         ('Relic', '遗物'),
         (' Max', '最大生命值')
-    }
+    ]
     PREVENT_MODIFY = "<!--本条注释用于防止机器人更新这个事件-->"
 
     def __init__(self):
