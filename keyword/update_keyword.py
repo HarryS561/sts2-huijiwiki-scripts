@@ -2,7 +2,9 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from utils import *
 
-data = json.load(open(os.path.join(data_path, "keywords.json"), 'r', encoding='utf-8'))
+# data = json.load(open(os.path.join(data_path, "keywords.json"), 'r', encoding='utf-8'))
+
+data = get_data_by_api("keywords")
 
 for keyword in data:
     keyword["category"] = "keyword"

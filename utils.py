@@ -5,6 +5,8 @@ from tqdm import tqdm
 import os
 import shutil
 import re
+from pypinyin import lazy_pinyin
+import requests
 
 with open('config.json','r', encoding='utf-8') as f:
     config = json.load(f)
@@ -16,7 +18,7 @@ site.login(
     password = config["huijiwiki"]["password"],
 )
 
-ver = '0.98.2'
+ver = '0.98.3'
 
 data_path = "data"
 
@@ -97,9 +99,27 @@ def process_fields(indices: list):
     return fields
 
 def clean_text(text: str, color):
-    if color and color != "" and color in color_mapping:
-        text = text.replace("[E]", f"[[File:{color}_energy_icon.png|16px|link=]]")
+    energy_mapping = {
+        "ironclad": "ironclad",
+        "silent": "silent",
+        "defect": "defect",
+        "necrobinder": "necrobinder",
+        "regent": "regent",
+        "colorless": "colorless",
+        "event": "colorless",
+        "status": "colorless",
+        "curse": "colorless",
+        "quest": "colorless",
+        "token": "colorless",
+    }
+    if color and color != "" and color in energy_mapping:
+        text = text.replace("[E]", f"[[File:{energy_mapping[color]}_energy_icon.png|16px|link=]]")
     return text.replace("\n", "<br>").replace("[STAR]", "[[File:star_icon.png|16px|link=]]")
 
 def del_tags(text):
     return re.sub(r'\[/?[a-z]+(?::\d+)?\]', '', text)
+
+def get_data_by_api(route):
+    response = requests.get(f"https://spire-codex.com/api/{route}?lang=zhs")
+    response.raise_for_status()
+    return response.json()

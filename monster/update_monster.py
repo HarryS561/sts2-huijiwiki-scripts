@@ -2,11 +2,14 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from utils import *
 
+
 pagedata = json.loads(site.pages[f"Data:Monster.tabx"].text())
 fields = pagedata['schema']['fields']
 for i, field in enumerate(fields):
     if field['name'] == 'id':
         id_idx = i
+    elif field['name'] == 'tier':
+        tier_idx = i
     elif field['name'] == 'power':
         power_idx = i
     elif field['name'] == 'stage':
@@ -18,18 +21,16 @@ monster_data = {}
 for row in pagedata['data']:
     monster_id = row[id_idx]
     monster_data[monster_id] = {
+        'tier': row[tier_idx],
         'power': row[power_idx], 
         'stage': row[stage_idx],
         'note': row[note_idx]
     }
 
-data = json.load(open(os.path.join(data_path, "monsters.json"), 'r', encoding='utf-8'))
+# data = json.load(open(os.path.join(data_path, "monsters.json"), 'r', encoding='utf-8'))
 
-tier_mapping = {
-    "Normal": "普通",
-    "Elite": "精英",
-    "Boss": "Boss",
-}
+data = get_data_by_api("monsters")
+
 for monster in data:
     monster["category"] = "monster"
     monster["id"] = monster["id"].lower()
@@ -47,7 +48,9 @@ for monster in data:
         monster["ascendermaxHP"] = str(monster["max_hp_ascension"])
     else:
         monster["ascendermaxHP"] = monster["ascenderminHP"]
-    monster['tier'] = tier_mapping[monster['type']]
+    monster['tier'] = monster_data.get(monster['id'], {}).get('tier', '')
+    if not monster['tier']:
+        monster['tier'] = ''
     monster['power'] = monster_data.get(monster['id'], {}).get('power', '')
     if not monster['power']:
         monster['power'] = ''

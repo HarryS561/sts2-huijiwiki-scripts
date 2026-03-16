@@ -18,13 +18,17 @@ class EventWikiBot:
         ('a Potion', '1瓶随机药水'),
         ('Obtain ', '获得'),
         ('. 拾起时', '。拾起时'),
-        ('Add Writhe', '将一张苦恼添加')
+        ('Add Writhe', '将一张苦恼添加'),
+        ('Potion', '药水'),
+        ('Relic', '遗物'),
+        (' Max', '最大生命值')
     }
     PREVENT_MODIFY = "<!--本条注释用于防止机器人更新这个事件-->"
 
-    def __init__(self, events_file_path):
-        with open(events_file_path, 'r', encoding='utf-8') as f:
-            self.events = json.load(f)
+    def __init__(self):
+        self.events = get_data_by_api("events")
+        # with open(events_file_path, 'r', encoding='utf-8') as f:
+        #     self.events = json.load(f)
         self.events_by_id = {event['id']: event for event in self.events}
         self.missing_notes = []
 
@@ -114,7 +118,7 @@ class EventWikiBot:
 
     def _generate_option_template(self, option, level, locked_desc, result_desc, existing_note=''):
         # Escape pipe characters in content
-        title = option.get('title', '')
+        title = self._clean_text(option.get('title', ''))
         description = self._clean_text(option.get('description', ''), addlink=True)
         locked_text = self._clean_text(locked_desc)
         result_text = self._clean_text(result_desc)
@@ -324,6 +328,6 @@ class EventWikiBot:
 
 
 if __name__ == '__main__':
-    bot = EventWikiBot('data/events.json')
+    bot = EventWikiBot()
     bot.update_all_events()
     
