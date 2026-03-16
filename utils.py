@@ -7,6 +7,7 @@ import shutil
 import re
 from pypinyin import lazy_pinyin
 import requests
+from tag_parser import parse_tag
 
 with open('config.json','r', encoding='utf-8') as f:
     config = json.load(f)

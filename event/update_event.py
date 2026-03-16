@@ -1,4 +1,3 @@
-from hashlib import new
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from utils import *
@@ -12,9 +11,9 @@ class EventWikiBot:
     EN_REPLACEMENTS = {
         (' Max HP', '最大生命值'), 
         ('one of your Relics', '你的1件随机遗物'),
-        ('a random Relic', '1件随机遗物'),
-        ('a random Card', '1张随机卡牌'),
-        ('a random Potion', '1瓶随机药水'),
+        ('a random 遗物', '1件随机遗物'),
+        ('a random 卡牌', '1张随机卡牌'),
+        ('a random 药水', '1瓶随机药水'),
         ('a Potion', '1瓶随机药水'),
         ('Obtain ', '获得'),
         ('. 拾起时', '。拾起时'),
@@ -35,9 +34,9 @@ class EventWikiBot:
     def _clean_text(self, text, addlink = False):
         if not text:
             return ''
-        text = re.sub(r"\[/?[a-z]+(?::\d+)?\]", "", text)
         for orig, repl in self.EN_REPLACEMENTS:
             text = text.replace(orig, repl)
+        text = parse_tag(text)
         if addlink:
             for quest_name in self.QUEST_NAMES:
                 text = text.replace(quest_name, f'{{{{Card_link|{quest_name}}}}}')
@@ -224,11 +223,11 @@ class EventWikiBot:
             existing_content = page.text()
             
             if not existing_content:
-                print(f"页面不存在或为空: {page_title}")
+                print(f"页面不存在或为空", end="")
                 return False
             
             if self._should_skip_update(existing_content):
-                print(f"跳过更新：页面包含防止更新的注释: {page_title}")
+                print(f"页面包含防止更新的注释", end="")
                 return False
             
             new_content = self.generate_event_wikitext(event_id, existing_content)
@@ -236,7 +235,7 @@ class EventWikiBot:
             new_content = self._replace_options_content(existing_content, new_content)
             
             if new_content is None:
-                print(f"跳过更新：页面包含防止更新的注释: {page_title}")
+                print(f"页面包含防止更新的注释", end="")
                 return False
             
             page.edit(new_content, summary=f'更新事件数据 (版本 {ver})')
@@ -330,4 +329,3 @@ class EventWikiBot:
 if __name__ == '__main__':
     bot = EventWikiBot()
     bot.update_all_events()
-    
