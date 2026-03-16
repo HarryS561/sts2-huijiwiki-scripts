@@ -1,0 +1,1 @@
+print("请使用deprecated/update_card.py来更新卡牌数据")

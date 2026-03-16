@@ -2,7 +2,6 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from utils import *
 
-
 pagedata = json.loads(site.pages[f"Data:Monster.tabx"].text())
 fields = pagedata['schema']['fields']
 for i, field in enumerate(fields):

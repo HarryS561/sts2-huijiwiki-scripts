@@ -68,13 +68,20 @@ cost_mapping = {
 }
 tier_mapping = {
     "Starter": "初始",
+    "初始遗物": "初始",
     "Common": "普通",
+    "普通遗物": "普通",
     "Uncommon": "罕见",
+    "罕见遗物": "罕见",
     "Rare": "稀有",
+    "稀有遗物": "稀有",
     "Event": "事件",
+    "事件遗物": "事件",
     "Token": "衍生",
     "Ancient": "先古之民",
+    "先古遗物": "先古之民",
     "Shop": "商店",
+    "商店遗物": "商店",
     "None": "无",
 }
 pool_mapping = {
@@ -83,7 +90,9 @@ pool_mapping = {
     "defect": "故障机器人",
     "necrobinder": "亡灵契约师",
     "regent": "储君",
-    "colorless": "无色",
+    "colorless": "通用",
+    "shared": "通用",
+    "event": "事件",
 }
 
 def process_fields(indices: list):
@@ -100,6 +109,7 @@ def process_fields(indices: list):
     return fields
 
 def clean_text(text: str, color):
+    text = parse_tag(text, color)
     energy_mapping = {
         "ironclad": "ironclad",
         "silent": "silent",

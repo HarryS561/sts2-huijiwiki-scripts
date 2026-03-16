@@ -15,6 +15,19 @@ COLOR_TAGS = {
     "aqua",
 }
 
+ENERGY_MAPPING = {
+    "ironclad": "ironclad",
+    "silent": "silent",
+    "defect": "defect",
+    "necrobinder": "necrobinder",
+    "regent": "regent",
+    "colorless": "colorless",
+    "event": "colorless",
+    "status": "colorless",
+    "curse": "colorless",
+    "quest": "colorless",
+    "token": "colorless",
+}
 ENERGY_ICON = "[[File:colorless_energy_icon.png|16px|link=]]"
 STAR_ICON = "[[File:star_icon.png|16px|link=]]"
 
@@ -60,9 +73,10 @@ class Italic(Node):
 
 
 class Parser:
-    def __init__(self, text: str):
+    def __init__(self, text: str, color: Optional[str] = None):
         self.text = text
         self.pos = 0
+        self.color = ENERGY_MAPPING.get(color, "colorless")
 
     def eof(self) -> bool:
         return self.pos >= len(self.text)
@@ -173,8 +187,13 @@ class Parser:
         except ValueError:
             count = 1
 
-        icon = ENERGY_ICON if name == "energy" else STAR_ICON
-        return Text(icon * count)
+        if name == "energy":
+            energy_icon = f"[[File:{self.color}_energy_icon.png|16px|link=]]" if self.color else ENERGY_ICON
+            return Text(energy_icon * count)
+        elif name == "star":
+            return Text(STAR_ICON * count)
+
+        return None
 
 
 def unwrap_single(node: Node) -> Node:
@@ -287,8 +306,8 @@ def render(node: Node) -> str:
     raise TypeError(f"Unknown node type: {type(node)!r}")
 
 
-def parse_tag(text: str) -> str:
-    tree = Parser(text).parse()
+def parse_tag(text: str, color: str) -> str:
+    tree = Parser(text, color).parse()
     tree = simplify(tree)
     return render(tree)
 
