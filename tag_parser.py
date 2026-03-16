@@ -306,7 +306,7 @@ def render(node: Node) -> str:
     raise TypeError(f"Unknown node type: {type(node)!r}")
 
 
-def parse_tag(text: str, color: str) -> str:
+def parse_tag(text: str, color: Optional[str] = None) -> str:
     tree = Parser(text, color).parse()
     tree = simplify(tree)
     return render(tree)

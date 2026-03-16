@@ -6,14 +6,16 @@ class EventWikiBot:
     QUEST_NAMES = ['多尼斯异鸟蛋', '灯火钥匙', '藏宝图', '历史课', '天选芝士', '污浊药水', '啄击', 
                    '坚韧之环', '石之剑', '发光水', '菲涅耳透镜', '开悟', '杀灭', '压扁', '花粉核心', 
                    '羽化', '究极打击', '究极防御', '棱镜碎片', '王室猛毒', '大蘑菇', '芳香蘑菇', '遗忘之魂']
-    ENCHANTMENT_NAMES = [e["name"] for e in json.load(open("data/enchantments.json", encoding="utf-8"))]
-    CURSE_NAMES = [e["name"] for e in json.load(open("data/cards.json", encoding="utf-8")) if e['rarity'] == 'Curse']
+    ENCHANTMENT_NAMES = [e["name"] for e in get_data_by_api("enchantments")]
+    CURSE_NAMES = [e["name"] for e in get_data_by_api("cards") if e['rarity'] == 'Curse']
     EN_REPLACEMENTS = {
         (' Max HP', '最大生命值'), 
         ('one of your Relics', '你的1件随机遗物'),
         ('a random 遗物', '1件随机遗物'),
         ('a random 卡牌', '1张随机卡牌'),
+        ('a random Card', '1张随机卡牌'),
         ('a random 药水', '1瓶随机药水'),
+
         ('a Potion', '1瓶随机药水'),
         ('Obtain ', '获得'),
         ('. 拾起时', '。拾起时'),
