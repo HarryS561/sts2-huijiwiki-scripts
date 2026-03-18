@@ -7,18 +7,17 @@ class EventWikiBot:
                    '坚韧之环', '石之剑', '发光水', '菲涅耳透镜', '开悟', '杀灭', '压扁', '花粉核心', 
                    '羽化', '究极打击', '究极防御', '棱镜碎片', '王室猛毒', '大蘑菇', '芳香蘑菇', '遗忘之魂']
     ENCHANTMENT_NAMES = [e["name"] for e in get_data_by_api("enchantments")]
-    CURSE_NAMES = [e["name"] for e in get_data_by_api("cards") if e['rarity'] == 'Curse']
+    CURSE_NAMES = [e["name"] for e in get_data_by_api("cards") if e['rarity'] == '诅咒']
     EN_REPLACEMENTS = [
         (' Max HP', '最大生命值'), 
         ('one of your Relics', '你的1件随机遗物'),
-        ('a random 遗物', '1件随机遗物'),
-        ('a random 卡牌', '1张随机卡牌'),
+        ('a random Relic', '1件随机遗物'),
         ('a random Card', '1张随机卡牌'),
-        ('a random 药水', '1瓶随机药水'),
+        ('a random Potion', '1瓶随机药水'),
         ('a Potion', '1瓶随机药水'),
         ('Obtain ', '获得'),
         ('. 拾起时', '。拾起时'),
-        ('Add Writhe', '将一张苦恼添加'),
+        ('Add [red]Writhe[/red]', '将一张[red]苦恼[/red]添加'),
         ('Potion', '药水'),
         ('Relic', '遗物'),
         (' Max', '最大生命值')
@@ -37,6 +36,7 @@ class EventWikiBot:
             return ''
         for orig, repl in self.EN_REPLACEMENTS:
             text = text.replace(orig, repl)
+        text = text.replace("\n\n", "\n").replace("\n", "<br />")
         text = parse_tag(text)
         if addlink:
             for quest_name in self.QUEST_NAMES:
@@ -45,7 +45,6 @@ class EventWikiBot:
                 text = text.replace(curse_name, f'{{{{Card_link|{curse_name}}}}}')
             for enchantment_name in self.ENCHANTMENT_NAMES:
                 text = text.replace(enchantment_name, f'[[附魔|{enchantment_name}]]')
-        text = text.replace("\n\n", "\n").replace("\n", "<br />")
         return text
 
     def _extract_existing_notes(self, page_content):
@@ -330,3 +329,4 @@ class EventWikiBot:
 if __name__ == '__main__':
     bot = EventWikiBot()
     bot.update_all_events()
+    # print(bot._clean_text("将一张[red]笨拙[/red]加入你的[gold]牌组[/gold]。获得一件随机[gold]遗物[/gold]。", addlink=True))

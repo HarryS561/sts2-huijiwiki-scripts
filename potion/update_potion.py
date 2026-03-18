@@ -23,7 +23,6 @@ for potion in data:
 
 field_order = [
     "category",
-    "ver",
     "id",
     "name",
     "color",
