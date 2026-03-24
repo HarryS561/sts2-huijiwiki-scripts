@@ -8,7 +8,6 @@ import re
 from pypinyin import lazy_pinyin
 import requests
 from tag_parser import parse_tag
-from update_image import update_card_images
 
 with open('config.json','r', encoding='utf-8') as f:
     config = json.load(f)
@@ -28,9 +27,9 @@ with open('C:/Program Files (x86)/Steam/steamapps/common/Slay the Spire 2/export
 color_mapping = {
     "ironclad": "铁甲战士",
     "silent": "静默猎手",
-    "defect": "故障机器人",
-    "necrobinder": "亡灵契约师",
     "regent": "储君",
+    "necrobinder": "亡灵契约师",
+    "defect": "故障机器人",
     "colorless": "无色",
     "event": "事件",
     "status": "状态",
@@ -180,3 +179,28 @@ def diff_tabx_records(old_data, new_data):
         elif old_data[key] != new_data[key]:
             diff_keys.append(key)
     return sorted(diff_keys)
+
+def update_card_images(ids: list[str]):
+    base_path = 'C:/Program Files (x86)/Steam/steamapps/common/Slay the Spire 2/export/slay-the-spire-2'
+    ids = [id.upper() for id in ids]
+    print(ids)
+    card_images = os.path.join(base_path, 'card-images')
+    for filename in os.listdir(card_images):
+        if filename.endswith('.png') and filename.replace('Plus1', '_UPGRADE').replace('.png', '') in ids:
+            new_name = filename.lower().replace('plus1', '_upgrade')
+            # if not ("文件:" + new_name.capitalize().replace('_', ' ')) in exist:
+            if not False:
+                print(f"正在上传 {filename} -> {new_name}")
+                for attempt in range(1, 5):
+                    try:
+                        site.upload(os.path.join(card_images, filename), new_name, '[[分类:卡牌图像]]', True)
+                        break
+                    except APIError as e:
+                        if e.code == "fileexists-no-change":
+                            # 远端已经是完全相同的版本，不算真正失败
+                            print(f"文件 {filename} 内容没变化，跳过上传")
+                            break
+                        elif e.code == "empty-file":
+                            continue
+                        else:
+                            raise

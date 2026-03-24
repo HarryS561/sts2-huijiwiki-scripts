@@ -4,6 +4,8 @@ from utils import *
 
 print(f"共找到 {len(data['cards'])} 张卡牌数据，正在处理...")
 
+# cards_data_from_api = {card['id']: card for card in get_data_by_api('cards')}
+
 cards = {}
 has_upgrades = set()
 for card in data['cards']:
@@ -22,7 +24,8 @@ for card in data['cards']:
         "type": card.get("type", ""),
         "cost": str(card.get("cost", "")),
         "description": card.get("description", ""),
-        "upgrade": upgraded == 1 and "upgraded" or "cannotupgrade",
+        # "compendium_order": str(cards_data_from_api.get(card_id.upper().replace("_UPGRADE", ""), {}).get('compendium_order', "")),
+        "upgrade": upgraded == 1 and "已升级" or "不可升级_upgrade",
         "image": f'{card_id.lower()}.png',
     }
     if upgraded != 1:
@@ -56,6 +59,62 @@ for card in cards.values():
     if card["cost"] == "":
         card["cost"] = "无"
 
+# 从 mapping 的值构建排序顺序
+color_order = list(color_mapping.values())
+rarity_order = list(rarity_mapping.values())
+type_order = list(type_mapping.values())
+cost_order = list(cost_mapping.values())
+
+def get_sort_key(card_id):
+    """根据指定规则生成排序键"""
+    card = cards.get(card_id.replace("_upgrade", ""))
+    if not card:
+        return (float('inf'), float('inf'), float('inf'), float('inf'), "")
+    
+    # color 排序
+    color = card.get("color", "")
+    try:
+        color_key = color_order.index(color)
+    except ValueError:
+        color_key = len(color_order)
+    
+    # rarity 排序
+    rarity = card.get("rarity", "")
+    try:
+        rarity_key = rarity_order.index(rarity)
+    except ValueError:
+        rarity_key = len(rarity_order)
+    
+    # type 排序
+    type_ = card.get("type", "")
+    try:
+        type_key = type_order.index(type_)
+    except ValueError:
+        type_key = len(type_order)
+    
+    # cost 排序（X 视为 0）
+    cost = card.get("cost", "")
+    if cost == "零" or cost == "X":
+        cost_key = 0
+    else:
+        try:
+            cost_key = cost_order.index(cost)
+        except ValueError:
+            cost_key = len(cost_order)
+    
+    # 拼音排序
+    name = card.get("name", "")
+    pinyin = "".join(lazy_pinyin(name))
+    
+    return (color_key, rarity_key, type_key, cost_key, pinyin)
+
+# 对卡牌进行排序
+sorted_card_ids = sorted(cards.keys(), key=get_sort_key)
+
+# 为每个卡牌分配 compendium_order
+for idx, card_id in enumerate(sorted_card_ids):
+    cards[card_id]["compendium_order"] = str(idx + 1)
+
 # 转成二维数组，按字段顺序输出
 field_order = [
     "category",
@@ -67,10 +126,11 @@ field_order = [
     "cost",
     "description",
     "upgrade",
+    "compendium_order",
     "image",
     "page",
 ]
-result = [[card.get(field) for field in field_order] for card in cards.values()]
+result = [[cards[card_id].get(field) for field in field_order] for card_id in sorted_card_ids]
 
 pagedata = json.dumps({
     "sources": f"导出数据自版本 {ver}",
