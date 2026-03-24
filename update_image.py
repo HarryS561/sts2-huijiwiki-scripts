@@ -1,4 +1,6 @@
-from deprecated_utils import *
+import sys, os
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+from utils import *
 
 base_path = 'C:/Program Files (x86)/Steam/steamapps/common/Slay the Spire 2/export/slay-the-spire-2'
 

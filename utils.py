@@ -8,6 +8,7 @@ import re
 from pypinyin import lazy_pinyin
 import requests
 from tag_parser import parse_tag
+from update_image import update_card_images
 
 with open('config.json','r', encoding='utf-8') as f:
     config = json.load(f)
@@ -21,7 +22,8 @@ site.login(
 
 ver = '0.99.1'
 
-data_path = "data"
+with open('C:/Program Files (x86)/Steam/steamapps/common/Slay the Spire 2/export/items.json', 'r', encoding='utf-8') as f:
+    data = json.load(f)
 
 color_mapping = {
     "ironclad": "铁甲战士",
@@ -108,7 +110,7 @@ def process_fields(indices: list):
         })
     return fields
 
-def clean_text(text: str, color):
+def clean_text(text: str, color: str = "colorless"):
     text = parse_tag(text, color)
     energy_mapping = {
         "ironclad": "ironclad",
