@@ -1,4 +1,5 @@
 from deprecated_utils import *
+from update_image import update_card_images
 
 print(f"共找到 {len(data['cards'])} 张卡牌数据，正在处理...")
 
@@ -80,4 +81,9 @@ pagedata = json.dumps({
 
 # with open(f"cards_{ver}.json", "w", encoding="utf-8") as f:
 #     f.write(pagedata)
+
+old_data_parsed = parse_tabx("Data:Card.tabx", "id")
 site.pages["Data:Card.tabx"].save(pagedata, summary=f"导出数据自版本 {ver}")
+new_data_parsed = parse_tabx("Data:Card.tabx", "id")
+diff = diff_tabx_records(old_data_parsed, new_data_parsed)
+update_card_images(diff)

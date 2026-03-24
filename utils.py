@@ -19,7 +19,7 @@ site.login(
     password = config["huijiwiki"]["password"],
 )
 
-ver = '0.98.3'
+ver = '0.99.1'
 
 data_path = "data"
 
@@ -134,3 +134,47 @@ def get_data_by_api(route):
     response = requests.get(f"https://spire-codex.com/api/{route}?lang=zhs")
     response.raise_for_status()
     return response.json()
+
+def parse_tabx(page, key_field, value_fields=None):
+    """
+    通用 tabx 解析函数
+
+    :param page: tabx的完整页面名（如 "Data:Monster.tabx"）
+    :param key_field: 用作字典 key 的字段名（如 'id'）
+    :param value_fields: 需要提取的字段列表（如 ['power', 'stage']）
+                         如果为 None，则提取所有字段
+    :return: dict
+    """
+    pagedata = json.loads(site.pages[page].text())
+    fields = pagedata['schema']['fields']
+    # 建立字段名 -> 索引映射
+    field_index = {field['name']: i for i, field in enumerate(fields)}
+    # 校验 key 是否存在
+    if key_field not in field_index:
+        raise ValueError(f"字段 {key_field} 不存在")
+    # 如果没指定 value_fields，则默认取全部字段
+    if value_fields is None:
+        value_fields = list(field_index.keys())
+    result = {}
+    for row in pagedata['data']:
+        key = row[field_index[key_field]]
+
+        result[key] = {
+            field: row[field_index[field]]
+            for field in value_fields
+            if field in field_index
+        }
+    return result
+
+def diff_tabx_records(old_data, new_data):
+    """
+    比较两个 tabx 解析后的字典，返回所有有差异的 key（排序后）
+    """
+    diff_keys = []
+    all_keys = set(old_data.keys()) | set(new_data.keys())
+    for key in all_keys:
+        if key not in old_data or key not in new_data:
+            diff_keys.append(key)
+        elif old_data[key] != new_data[key]:
+            diff_keys.append(key)
+    return sorted(diff_keys)
