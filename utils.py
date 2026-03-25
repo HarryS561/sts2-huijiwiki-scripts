@@ -8,6 +8,8 @@ import re
 from pypinyin import lazy_pinyin
 import requests
 from tag_parser import parse_tag
+from icu import Collator, Locale
+collator = Collator.createInstance(Locale("zh@collation=pinyin"))
 
 with open('config.json','r', encoding='utf-8') as f:
     config = json.load(f)
@@ -76,23 +78,23 @@ tier_mapping = {
     "罕见遗物": "罕见",
     "Rare": "稀有",
     "稀有遗物": "稀有",
+    "Shop": "商店",
+    "商店遗物": "商店",
+    "Ancient": "先古之民",
+    "先古遗物": "先古之民",
     "Event": "事件",
     "事件遗物": "事件",
     "Token": "衍生",
-    "Ancient": "先古之民",
-    "先古遗物": "先古之民",
-    "Shop": "商店",
-    "商店遗物": "商店",
     "None": "无",
 }
 pool_mapping = {
-    "ironclad": "铁甲战士",
-    "silent": "静默猎手",
-    "defect": "故障机器人",
-    "necrobinder": "亡灵契约师",
-    "regent": "储君",
     "colorless": "通用",
     "shared": "通用",
+    "ironclad": "铁甲战士",
+    "silent": "静默猎手",
+    "regent": "储君",
+    "necrobinder": "亡灵契约师",
+    "defect": "故障机器人",
     "event": "事件",
 }
 
@@ -109,24 +111,33 @@ def process_fields(indices: list):
         })
     return fields
 
-def clean_text(text: str, color: str = "colorless"):
-    text = parse_tag(text, color)
-    energy_mapping = {
-        "ironclad": "ironclad",
-        "silent": "silent",
-        "defect": "defect",
-        "necrobinder": "necrobinder",
-        "regent": "regent",
-        "colorless": "colorless",
-        "event": "colorless",
-        "status": "colorless",
-        "curse": "colorless",
-        "quest": "colorless",
-        "token": "colorless",
-    }
-    if color and color != "" and color in energy_mapping:
-        text = text.replace("[E]", f"[[File:{energy_mapping[color]}_energy_icon.png|16px|link=能量]]")
-    return text.replace("\n", "<br>").replace("[STAR]", "[[File:star_icon.png|16px|link=辉星]]")
+energy_mapping = {
+    "ironclad": "ironclad",
+    "silent": "silent",
+    "defect": "defect",
+    "necrobinder": "necrobinder",
+    "regent": "regent",
+    "colorless": "colorless",
+    "event": "colorless",
+    "status": "colorless",
+    "curse": "colorless",
+    "quest": "colorless",
+    "token": "colorless",
+}
+def clean_text(text: str, color: str = "colorless", parsetag: bool = True):
+    text = text.replace("\n", "<br>")
+    if parsetag:
+        text = parse_tag(text, color)
+        if color and color != "" and color in energy_mapping:
+            text = text.replace("[E]", f"[[File:{energy_mapping[color]}_energy_icon.png|16px|link=能量]]")
+        text = text.replace("[STAR]", "[[File:star_icon.png|16px|link=辉星]]")
+    else:
+        text = text.replace("[E]", "能量").replace("[STAR]", "辉星")
+        f = lambda s: re.sub(r'\[(energy|star):(\d+)\]',
+                     lambda m: {'energy':'能量','star':'辉星'}[m[1]] * int(m[2]),
+                     s)
+        text = del_tags(f(text))
+    return text
 
 def del_tags(text):
     return re.sub(r'\[/?[a-z]+(?::\d+)?\]', '', text)

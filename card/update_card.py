@@ -39,6 +39,7 @@ for card in has_upgrades:
 
 for card in cards.values():
     if card.get("description"):
+        card["description_raw"] = clean_text(card["description"], card.get("color"), False)
         card["description"] = clean_text(card["description"], card.get("color"))
     if card.get("color"):
         if not color_mapping.get(card["color"]):
@@ -102,11 +103,12 @@ def get_sort_key(card_id):
         except ValueError:
             cost_key = len(cost_order)
     
-    # 拼音排序
+    # unicode排序
     name = card.get("name", "")
-    pinyin = "".join(lazy_pinyin(name))
+    collator_key = collator.getSortKey(name)
+    # pinyin = " ".join(lazy_pinyin(name))
     
-    return (color_key, rarity_key, type_key, cost_key, pinyin)
+    return (color_key, rarity_key, type_key, cost_key, collator_key)
 
 # 对卡牌进行排序
 sorted_card_ids = sorted(cards.keys(), key=get_sort_key)
@@ -125,6 +127,7 @@ field_order = [
     "type",
     "cost",
     "description",
+    "description_raw",
     "upgrade",
     "compendium_order",
     "image",

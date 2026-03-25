@@ -7,6 +7,7 @@ print(f"共找到 {len(data)} 个药水数据，正在处理...")
 
 for potion in data:
     if potion.get("description"):
+        potion["description_raw"] = clean_text(potion["description"], potion.get("color"), False)
         potion["description"] = clean_text(potion["description"], potion.get("color"))
     potion["category"] = "potion"
     potion["id"] = potion["id"].lower()
@@ -21,6 +22,34 @@ for potion in data:
         potion["tier"] = tier_mapping.get(potion["rarity"], potion["rarity"])
     potion["page"] = potion["name"]
 
+tier_order = list(tier_mapping.values())
+pool_order = list(pool_mapping.values())
+
+def get_sort_key(potion):
+    """根据指定规则生成排序键"""
+    # tier 排序
+    tier = potion.get("tier", "")
+    try:
+        tier_key = tier_order.index(tier)
+    except ValueError:
+        tier_key = len(tier_order)
+    
+    # pool 排序
+    pool = potion.get("color", "")
+    try:
+        pool_key = pool_order.index(pool)
+    except ValueError:
+        pool_key = len(pool_order)
+    
+    # unicode排序
+    collator_key = collator.getSortKey(potion.get("name", ""))
+    
+    return (tier_key, pool_key, collator_key)
+
+data = sorted(data, key=get_sort_key)
+for idx, potion in enumerate(data):
+    potion["compendium_order"] = str(idx + 1)
+
 field_order = [
     "category",
     "id",
@@ -28,6 +57,8 @@ field_order = [
     "color",
     "tier",
     "description",
+    "description_raw",
+    "compendium_order",
     "image",
     "page",
 ]
