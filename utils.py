@@ -7,6 +7,10 @@ import shutil
 import re
 from pypinyin import lazy_pinyin
 import requests
+import hashlib
+import tempfile
+import subprocess
+from pathlib import Path
 from tag_parser import parse_tag
 from icu import Collator, Locale
 collator = Collator.createInstance(Locale("zh@collation=pinyin"))
