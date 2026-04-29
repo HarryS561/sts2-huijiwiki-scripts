@@ -71,6 +71,9 @@ cost_mapping = {
     "4": "四",
     "5": "五",
     "6": "六",
+    "7": "七",
+    "8": "八",
+    "9": "九",
     "X": "X",
 }
 tier_mapping = {
@@ -141,6 +144,7 @@ def clean_text(text: str, color: str = "colorless", parsetag: bool = True):
                      lambda m: {'energy':'能量','star':'辉星'}[m[1]] * int(m[2]),
                      s)
         text = del_tags(f(text))
+        text = text.replace("<br>", "")
     return text
 
 def del_tags(text):

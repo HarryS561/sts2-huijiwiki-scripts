@@ -85,12 +85,36 @@ def convert_skel_to_json(skel_path: Path) -> Path:
     return json_path
 
 
-def rewrite_atlas_first_page_name(atlas_text: str, new_png_name: str) -> str:
+def rewrite_atlas_all_page_names(atlas_text: str, root_dir: Path, atlas_path: Path) -> str:
     lines = atlas_text.splitlines()
+
     for i, line in enumerate(lines):
-        if line.strip():
-            lines[i] = new_png_name
-            break
+        s = line.strip()
+
+        # 跳过空行
+        if not s:
+            continue
+
+        # 只处理 png 行（更安全）
+        if not s.lower().endswith(".png"):
+            continue
+
+        # 找本地 png
+        png_local_path = atlas_path.parent / s
+        if not png_local_path.exists():
+            raise FileNotFoundError(
+                f"atlas 引用的 png 不存在: {png_local_path}\n"
+                f"atlas 文件: {atlas_path}\n"
+                f"行内容: {s}"
+            )
+
+        # 转 wiki 名
+        png_rel = normalize_relpath(png_local_path.relative_to(root_dir))
+        png_wiki_filename = png_wiki_filename_from_relpath(png_rel)
+
+        # 替换
+        lines[i] = png_wiki_filename
+
     return "\n".join(lines) + ("\n" if atlas_text.endswith("\n") else "")
 
 
@@ -142,7 +166,7 @@ def process_atlas(site, root_dir: Path, path: Path, md5_record: dict):
     png_rel = normalize_relpath(png_local_path.relative_to(root_dir))
     png_wiki_filename = png_wiki_filename_from_relpath(png_rel)
 
-    new_atlas_text = rewrite_atlas_first_page_name(atlas_text, png_wiki_filename)
+    new_atlas_text = rewrite_atlas_all_page_names(atlas_text, root_dir, path)
     page_title = f"Data:Spine/{relpath_without_ext(path.relative_to(root_dir))}/atlas"
 
     # print(f"[ATLAS] 上传: {rel} -> {page_title}")
@@ -167,8 +191,17 @@ def process_skel(site, root_dir: Path, path: Path, md5_record: dict):
         json_text = read_text_file(json_path)
         page_title = f"Data:Spine/{relpath_without_ext(path.relative_to(root_dir))}/json"
 
-        # print(f"[SKEL] 上传: {rel} -> {page_title}")
-        upload_text_page(site, page_title, json_text, "更新 Spine json")
+        is_multipart = upload_spine_json(
+            site,
+            page_title,
+            json_text,
+            "更新 Spine json"
+        )
+
+        # if is_multipart:
+        #     print(f"[SKEL] 拆页上传: {rel}")
+        # else:
+        #     print(f"[SKEL] 直接上传: {rel}")
 
         md5_record[rel] = md5
         return True
@@ -205,6 +238,50 @@ def split_text_by_utf8_bytes(text: str, max_bytes: int) -> list[str]:
     return parts
 
 
+def upload_spine_json(site, base_title: str, json_text: str, summary: str):
+    # 比 2048 KiB 留余量，避免踩边界
+    single_page_limit = 1800 * 1024
+
+    text_bytes = json_text.encode("utf-8")
+    text_size = len(text_bytes)
+
+    # 小文件：直接上传
+    if text_size <= single_page_limit:
+        upload_text_page(site, base_title, json_text, summary)
+        return False  # 非 multipart
+
+    # 大文件：拆页
+    parts = split_text_by_utf8_bytes(json_text, single_page_limit)
+
+    part_titles = []
+    total = len(parts)
+
+    for i, part_text in enumerate(parts, start=1):
+        part_title = f"{base_title}/{i}"
+        upload_text_page(
+            site,
+            part_title,
+            part_text,
+            f"{summary} part {i}/{total}"
+        )
+        part_titles.append(part_title)
+
+    # 极简 manifest
+    manifest = {
+        "_multipart": True,
+        "parts": part_titles
+    }
+
+    upload_text_page(
+        site,
+        base_title,
+        json.dumps(manifest, ensure_ascii=False),
+        f"{summary} manifest"
+    )
+
+    return True  # multipart
+
+
 def iter_target_files(root_dir: Path):
     exts = {".atlas", ".png", ".skel"}
     for path in root_dir.rglob("*"):
@@ -223,6 +300,7 @@ def filter_changed_files(files, root_dir: Path, md5_record: dict):
         md5 = file_md5(path)
 
         if md5_record.get(rel) != md5:
+        # if md5_record.get(rel) != md5 or path.suffix == '.atlas':
             changed_files.append(path)
 
     return changed_files
