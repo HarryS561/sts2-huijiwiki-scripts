@@ -24,7 +24,7 @@ for row in pagedata['data']:
 
 for power in data:
     if power.get("description"):
-        power["description"] = clean_text(power["description"], power.get("color")).replace("this creature", "该怪物")
+        power["description"] = clean_text(power["description"], power.get("color")).replace("this creature", "该怪物").replace("[Amount]", "X")
     power["category"] = "power"
     power["id"] = power["id"].lower()
     power["image"] = f'{power["id"]}_power.png'
